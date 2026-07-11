@@ -27,13 +27,3 @@ GLFWwindow* init_glfw() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     return window;
 }
-
-void run(GLFWwindow* window) {
-    while (!glfwWindowShouldClose(window)) {
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        process_input(window);
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-}
