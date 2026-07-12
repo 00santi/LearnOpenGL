@@ -11,11 +11,18 @@ const char *vertexShaderSource = "#version 330 core\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
-const char *fragmentShaderSource = "#version 330 core\n"
+const char *fragmentShaderSource1 = "#version 330 core\n"
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "}\0";
+
+const char *fragmentShaderSource2 = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main()\n"
+    "{\n"
+    "   FragColor = vec4(0.68f, 0.85f, 0.9f, 1.0f);\n"
     "}\0";
 
 void init_glad() {
@@ -65,8 +72,8 @@ int main() {
         -0.7, -0.05, 0.0,
     };
 
-    const GLuint VAO1 = create_VAO();
-    const GLuint VBO1 = create_VBO(vertices1, sizeof(vertices1));
+    const GLuint VAO1 = create_VAO(); // also binds the VAO it creates
+    const GLuint VBO1 = create_VBO(vertices1, sizeof(vertices1)); // binds the buffer it creates
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -75,18 +82,22 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    const GLuint vertexShader = compile_vertex_shader(vertexShaderSource);
-    const GLuint fragmentShader = compile_fragment_shader(fragmentShaderSource);
-    const GLuint shaderProgram = create_shader_program(vertexShader, fragmentShader);
+    const GLuint vertexShader1 = compile_vertex_shader(vertexShaderSource);
+    const GLuint fragmentShader1 = compile_fragment_shader(fragmentShaderSource1);
+    const GLuint shaderProgram1 = create_shader_program(vertexShader1, fragmentShader1); // deletes vertex and fragment shaders after linking
+
+    const GLuint vertexShader2 = compile_vertex_shader(vertexShaderSource);
+    const GLuint fragmentShader2 = compile_fragment_shader(fragmentShaderSource2);
+    const GLuint shaderProgram2 = create_shader_program(vertexShader2, fragmentShader2);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
-
+        glUseProgram(shaderProgram1);
         glBindVertexArray(VAO1);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
+        glUseProgram(shaderProgram2);
         glBindVertexArray(VAO2);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -94,7 +105,8 @@ int main() {
         glfwPollEvents();
     }
 
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(shaderProgram1);
+    glDeleteProgram(shaderProgram2);
     glDeleteBuffers(1, &VBO1);
     glDeleteBuffers(1, &VBO2);
     glDeleteVertexArrays(1, &VAO1);
