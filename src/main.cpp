@@ -65,8 +65,8 @@ int main() {
     };
 
     const GLuint VAO = create_VAO();
-    create_VBO(vertices, sizeof(vertices));
-    create_EBO(indices, sizeof(indices));
+    const GLuint VBO = create_VBO(vertices, sizeof(vertices));
+    const GLuint EBO = create_EBO(indices, sizeof(indices));
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -85,4 +85,10 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    glDeleteProgram(shaderProgram);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(1, &VAO);
+    glfwTerminate();
 }
