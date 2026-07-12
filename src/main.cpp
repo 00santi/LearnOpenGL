@@ -40,73 +40,35 @@ GLuint create_VBO(const float vertices[], const int size) {
     return VBO;
 }
 
-void main2();
-
-int main() {
-    main2();
-    return 0;
-    GLFWwindow* window = init_glfw();
-    init_glad();
-    glViewport(0, 0, 800, 600);
-
-    constexpr float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
-    };
-
-    const GLuint VAO = create_VAO();
-    const GLuint VBO = create_VBO(vertices, sizeof(vertices));
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    const GLuint vertexShader = compile_vertex_shader(vertexShaderSource);
-    const GLuint fragmentShader = compile_fragment_shader(fragmentShaderSource);
-    const GLuint shaderProgram = create_shader_program(vertexShader, fragmentShader);
-
-    while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glDeleteProgram(shaderProgram);
-    glfwTerminate();
+GLuint create_EBO(const unsigned int indices[], const int size) {
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
+    return EBO;
 }
 
-void main2() {
+int main() {
     GLFWwindow* window = init_glfw();
     init_glad();
     glViewport(0, 0, 800, 600);
 
     float vertices[] = {
-        0.5f,  0.5f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-       -0.5f, -0.5f, 0.0f,  // bottom left
-       -0.5f,  0.5f, 0.0f   // top left
+        0.5f,  0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+       -0.5f, -0.5f, 0.0f,
+       -0.5f,  0.5f, 0.0f
    };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,   // first triangle
-        1, 2, 3    // second triangle
+    unsigned int indices[] = {
+        0, 1, 3,
+        1, 2, 3
     };
 
-    GLuint VAO = create_VAO();
-    GLuint VBO = create_VBO(vertices, sizeof(vertices));
-
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    const GLuint VAO = create_VAO();
+    create_VBO(vertices, sizeof(vertices));
+    create_EBO(indices, sizeof(indices));
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     const GLuint vertexShader = compile_vertex_shader(vertexShaderSource);
     const GLuint fragmentShader = compile_fragment_shader(fragmentShaderSource);
