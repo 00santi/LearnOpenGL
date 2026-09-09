@@ -6,13 +6,6 @@ import glfw "vendor:glfw"
 
 WIDTH, HEIGHT :: 800, 600
 window: glfw.WindowHandle
-vertex_shader: cstring =
-`#version 330 core
-layout (location = 0) in vec3 aPos;
-
-void main() {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-}`
 
 main :: proc() {
     init_glfw()
@@ -28,12 +21,8 @@ main :: proc() {
     gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), raw_data(vertices), gl.STATIC_DRAW)
 
-    vertex_shader_id := gl.CreateShader(gl.VERTEX_SHADER)
-    gl.ShaderSource(vertex_shader_id, 1, &vertex_shader, nil)
-    gl.CompileShader(vertex_shader_id)
-    success: i32
-    gl.GetShaderiv(vertex_shader_id, gl.COMPILE_STATUS, &success)
-    assert(success != 0, "error compiling vertex shader")
+    shader_program := create_shader_program()
+    gl.UseProgram(shader_program)
     
     for !glfw.WindowShouldClose(window) {
         glfw.PollEvents()
@@ -43,7 +32,8 @@ main :: proc() {
 
         glfw.SwapBuffers(window)
     }
-    
+
+    gl.DeleteProgram(shader_program)
     deinit()
 }
 
@@ -78,4 +68,48 @@ key_callback :: proc "c" (w: glfw.WindowHandle, key, scancode, action, mods: i32
 deinit :: proc() {
     glfw.Terminate()
     glfw.DestroyWindow(window)
+}
+
+vertex_shader: cstring =
+`#version 330 core
+layout (location = 0) in vec3 aPos;
+
+void main() {
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}`
+
+fragment_shader: cstring = 
+`#version 330 core
+out vec4 FragColor;
+
+void main() {
+    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+}`
+
+create_shader_program :: proc() -> u32 {
+	vertex_shader_id := gl.CreateShader(gl.VERTEX_SHADER)
+    gl.ShaderSource(vertex_shader_id, 1, &vertex_shader, nil)
+    gl.CompileShader(vertex_shader_id)
+    success: i32
+    gl.GetShaderiv(vertex_shader_id, gl.COMPILE_STATUS, &success)
+    assert(success != 0, "error compiling vertex shader")
+
+    fragment_shader_id := gl.CreateShader(gl.FRAGMENT_SHADER)
+    gl.ShaderSource(fragment_shader_id, 1, &fragment_shader, nil)
+    gl.CompileShader(fragment_shader_id)
+    gl.GetShaderiv(fragment_shader_id, gl.COMPILE_STATUS, &success)
+    assert(success != 0, "error compiling fragment shader")
+
+    program := gl.CreateProgram()
+    gl.AttachShader(program, vertex_shader_id)
+    gl.AttachShader(program, fragment_shader_id)
+
+    gl.LinkProgram(program)
+    gl.GetProgramiv(program, gl.LINK_STATUS, &success);
+    assert(success != 0, "error linking shaders")
+    
+    gl.DeleteShader(vertex_shader_id)
+    gl.DeleteShader(fragment_shader_id)
+    
+    return program
 }
