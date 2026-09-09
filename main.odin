@@ -11,6 +11,15 @@ main :: proc() {
     init_glfw()
     init_opengl()
 
+    vertices:= []f32 {
+        -0.5, -0.5, 0.0,
+         0.5, -0.5, 0.0,
+         0.0,  0.5, 0.0
+    };
+    vbo: u32
+    gl.GenBuffers(1, &vbo)
+    gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+    gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), raw_data(vertices), gl.STATIC_DRAW)
     for !glfw.WindowShouldClose(window) {
         glfw.PollEvents()
         
@@ -41,8 +50,8 @@ init_opengl :: proc() {
     gl.Viewport(0, 0, WIDTH, HEIGHT)
 }
 
-framebuffer_size_callback :: proc "c" (w: glfw.WindowHandle, width, height: i32) {
-	gl.Viewport(0, 0, WIDTH, HEIGHT)
+framebuffer_size_callback :: proc "c" (w: glfw.WindowHandle, new_width, new_height: i32) {
+	gl.Viewport(0, 0, new_width, new_height)
 }
 
 key_callback :: proc "c" (w: glfw.WindowHandle, key, scancode, action, mods: i32) {
