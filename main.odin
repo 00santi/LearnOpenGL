@@ -6,6 +6,13 @@ import glfw "vendor:glfw"
 
 WIDTH, HEIGHT :: 800, 600
 window: glfw.WindowHandle
+vertex_shader: cstring =
+`#version 330 core
+layout (location = 0) in vec3 aPos;
+
+void main() {
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}`
 
 main :: proc() {
     init_glfw()
@@ -20,6 +27,14 @@ main :: proc() {
     gl.GenBuffers(1, &vbo)
     gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), raw_data(vertices), gl.STATIC_DRAW)
+
+    vertex_shader_id := gl.CreateShader(gl.VERTEX_SHADER)
+    gl.ShaderSource(vertex_shader_id, 1, &vertex_shader, nil)
+    gl.CompileShader(vertex_shader_id)
+    success: i32
+    gl.GetShaderiv(vertex_shader_id, gl.COMPILE_STATUS, &success)
+    assert(success != 0, "error compiling vertex shader")
+    
     for !glfw.WindowShouldClose(window) {
         glfw.PollEvents()
         
