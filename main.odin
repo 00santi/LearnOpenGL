@@ -9,8 +9,7 @@ window: glfw.WindowHandle
 
 main :: proc() {
     init_glfw()
-    gl.load_up_to(3, 3, glfw.gl_set_proc_address)
-    gl.Viewport(0, 0, WIDTH, HEIGHT)
+    init_opengl()
 
     for !glfw.WindowShouldClose(window) {
         glfw.PollEvents()
@@ -33,6 +32,23 @@ init_glfw :: proc() {
     window = glfw.CreateWindow(WIDTH, HEIGHT, "OpenGL Window", nil, nil)
     ensure(window != nil, "error initializing window")
     glfw.MakeContextCurrent(window)
+    glfw.SetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfw.SetKeyCallback(window, key_callback);
+}
+
+init_opengl :: proc() {
+	gl.load_up_to(3, 3, glfw.gl_set_proc_address)
+    gl.Viewport(0, 0, WIDTH, HEIGHT)
+}
+
+framebuffer_size_callback :: proc "c" (w: glfw.WindowHandle, width, height: i32) {
+	gl.Viewport(0, 0, WIDTH, HEIGHT)
+}
+
+key_callback :: proc "c" (w: glfw.WindowHandle, key, scancode, action, mods: i32) {
+	if key == glfw.KEY_ESCAPE && action == glfw.PRESS {
+		glfw.SetWindowShouldClose(w, true)
+	}
 }
 
 deinit :: proc() {
