@@ -10,34 +10,42 @@ window: glfw.WindowHandle
 main :: proc() {
     init_glfw()
     init_opengl()
+    shader_program := create_shader_program()
 
-    vertices:= []f32 {
-        -0.5, -0.5, 0.0,
-         0.5, -0.5, 0.0,
-         0.0,  0.5, 0.0
+    vertices := []f32 {
+        -0.5, 0.5, 0.0,
+         0.5, 0.5, 0.0,
+         -0.5, -0.5, 0.0,
+         0.5, -0.5, 0.0
     }
-    vao: u32
+
+    indices := []u16 {
+        0, 1, 2,
+        1, 2, 3,
+    }
+    
+    vao, vbo, ebo: u32
     gl.GenVertexArrays(1, &vao)
-    gl.BindVertexArray(vao)
-    
-    vbo: u32
     gl.GenBuffers(1, &vbo)
+    gl.GenBuffers(1, &ebo)
+
+    gl.BindVertexArray(vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-    
-    gl.BufferData(gl.ARRAY_BUFFER, len(vertices) * size_of(f32), raw_data(vertices), gl.STATIC_DRAW)
+    gl.BufferData(gl.ARRAY_BUFFER, len(vertices) * size_of(vertices[0]), raw_data(vertices), gl.STATIC_DRAW)
     gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), 0)
     gl.EnableVertexAttribArray(0)
-
-    shader_program := create_shader_program()
+    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices) * size_of(indices[0]), raw_data(indices), gl.STATIC_DRAW)
     
     for !glfw.WindowShouldClose(window) {
         glfw.PollEvents()
         
         gl.ClearColor(0.1, 0.15, 0.25, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT)
+        
         gl.UseProgram(shader_program)
         gl.BindVertexArray(vao)
-        gl.DrawArrays(gl.TRIANGLES, 0, 3)
+        gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, nil)
 
         glfw.SwapBuffers(window)
     }
