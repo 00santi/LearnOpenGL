@@ -15,22 +15,29 @@ main :: proc() {
         -0.5, -0.5, 0.0,
          0.5, -0.5, 0.0,
          0.0,  0.5, 0.0
-    };
+    }
+    vao: u32
+    gl.GenVertexArrays(1, &vao)
+    gl.BindVertexArray(vao)
+    
     vbo: u32
     gl.GenBuffers(1, &vbo)
     gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-    gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), raw_data(vertices), gl.STATIC_DRAW)
-    gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), 0);
-    gl.EnableVertexAttribArray(0);
+    
+    gl.BufferData(gl.ARRAY_BUFFER, len(vertices) * size_of(f32), raw_data(vertices), gl.STATIC_DRAW)
+    gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), 0)
+    gl.EnableVertexAttribArray(0)
 
     shader_program := create_shader_program()
-    gl.UseProgram(shader_program)
     
     for !glfw.WindowShouldClose(window) {
         glfw.PollEvents()
         
         gl.ClearColor(0.1, 0.15, 0.25, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT)
+        gl.UseProgram(shader_program)
+        gl.BindVertexArray(vao)
+        gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
         glfw.SwapBuffers(window)
     }
@@ -48,8 +55,8 @@ init_glfw :: proc() {
     window = glfw.CreateWindow(WIDTH, HEIGHT, "OpenGL Window", nil, nil)
     ensure(window != nil, "error initializing window")
     glfw.MakeContextCurrent(window)
-    glfw.SetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfw.SetKeyCallback(window, key_callback);
+    glfw.SetFramebufferSizeCallback(window, framebuffer_size_callback)
+    glfw.SetKeyCallback(window, key_callback)
 }
 
 init_opengl :: proc() {
@@ -107,7 +114,7 @@ create_shader_program :: proc() -> u32 {
     gl.AttachShader(program, fragment_shader_id)
 
     gl.LinkProgram(program)
-    gl.GetProgramiv(program, gl.LINK_STATUS, &success);
+    gl.GetProgramiv(program, gl.LINK_STATUS, &success)
     assert(success != 0, "error linking shaders")
     
     gl.DeleteShader(vertex_shader_id)
