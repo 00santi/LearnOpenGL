@@ -42,9 +42,9 @@ main :: proc() {
         gl.UseProgram(shader_program)
         
         time_value := f32(glfw.GetTime())
-        green_value := (math.sin(time_value) / 2.0) + 0.5
-        breathing_green_location := gl.GetUniformLocation(shader_program, "breathing_green")
-        gl.Uniform4f(breathing_green_location, 0.0, green_value, 0.0, 1.0)
+        offset_value := time_value / 50
+        horizontal_offset_location := gl.GetUniformLocation(shader_program, "horizontal_offset")
+        gl.Uniform1f(horizontal_offset_location, offset_value)
         
         gl.BindVertexArray(vao)
         gl.DrawArrays(gl.TRIANGLES, 0, 3)
@@ -62,9 +62,10 @@ vertex_shader: cstring =
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_color;
 out vec3 vertex_color;
+uniform float horizontal_offset;
 
 void main() {
-    gl_Position = vec4(a_pos.x, -a_pos.y, a_pos.z, 1.0);
+    gl_Position = vec4(a_pos.x + horizontal_offset, -a_pos.y, a_pos.z, 1.0);
     vertex_color = a_color;
 }`
 
@@ -72,7 +73,6 @@ fragment_shader: cstring =
 `#version 330 core
 in vec3 vertex_color;
 out vec4 frag_color;
-uniform vec4 breathing_green;
 
 void main() {
     frag_color = vec4(vertex_color, 1.0);
