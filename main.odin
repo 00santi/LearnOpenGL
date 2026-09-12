@@ -1,6 +1,7 @@
 package main
 
 import fmt "core:fmt"
+import math "core:math"
 import gl "vendor:OpenGL"
 import glfw "vendor:glfw"
 
@@ -42,8 +43,14 @@ main :: proc() {
         
         gl.ClearColor(0.1, 0.15, 0.25, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT)
-        
+
         gl.UseProgram(shader_program)
+        
+        time_value := f32(glfw.GetTime())
+        green_value := (math.sin(time_value) / 2.0) + 0.5
+        my_color_location := gl.GetUniformLocation(shader_program, "my_color")
+        gl.Uniform4f(my_color_location, 0.0, green_value, 0.0, 1.0)
+        
         gl.BindVertexArray(vao)
         gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, nil)
 
@@ -89,18 +96,22 @@ deinit :: proc() {
 
 vertex_shader: cstring =
 `#version 330 core
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec3 a_pos;
+out vec4 vertex_color;
 
 void main() {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = vec4(a_pos, 1.0);
+    vertex_color = vec4(0.5, 0.0, 0.0, 1.0);
 }`
 
 fragment_shader: cstring = 
 `#version 330 core
-out vec4 FragColor;
+in vec4 vertex_color;
+out vec4 frag_color;
+uniform vec4 my_color;
 
 void main() {
-    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    frag_color = my_color;
 }`
 
 create_shader_program :: proc() -> u32 {
