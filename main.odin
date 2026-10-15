@@ -6,6 +6,7 @@ import glfw "vendor:glfw"
 import stbi "vendor:stb/image"
 
 WIDTH, HEIGHT :: 800, 600
+Mat4 :: matrix[4, 4]f32
 
 main :: proc() {
     window := init_glfw()
@@ -22,7 +23,7 @@ main :: proc() {
     gl.TexParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, raw_data(border_color))
     gl.Uniform1i(gl.GetUniformLocation(shader_program, "container_texture"), 0)
     gl.Uniform1i(gl.GetUniformLocation(shader_program, "face_texture"), 1)
-    horizontal_offset_location := gl.GetUniformLocation(shader_program, "horizontal_offset")
+    transform_location := gl.GetUniformLocation(shader_program, "transform")
     
     for !glfw.WindowShouldClose(window) {
         glfw.PollEvents()
@@ -34,10 +35,14 @@ main :: proc() {
         gl.ActiveTexture(gl.TEXTURE1)
         gl.BindTexture(gl.TEXTURE_2D, face_texture_id)
         gl.BindVertexArray(vao)
+
+        time := f32(glfw.GetTime())
+        translation := mat4_translation(0.1 * time, -0.5, 0)
+        rotation := mat4_rotation_z(3.5 * time)
+        scale := mat4_scale(0.5, 0.5, 1)
+        transform := translation * rotation * scale
         
-        time_value := f32(glfw.GetTime())
-        offset_value := time_value / 50
-        gl.Uniform1f(horizontal_offset_location, offset_value)
+        gl.UniformMatrix4fv(transform_location, 1, false, raw_data(&transform))
         
         gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
@@ -74,4 +79,34 @@ create_triangle :: proc() -> (_vao, _vbo: u32) {
     gl.EnableVertexAttribArray(2)
 
     return vao, vbo
+}
+
+mat4_translation :: proc(x, y, z: f32) -> Mat4 {
+    return {
+    	1, 0, 0, x,
+     	0, 1, 0, y,
+      	0, 0, 1, z,
+       	0, 0, 0, 1,
+    }
+}
+
+mat4_rotation_z :: proc(angle: f32) -> Mat4 {
+    c := math.cos(angle)
+    s := math.sin(angle)
+
+    return {
+         c,  s, 0, 0,
+        -s,  c, 0, 0,
+         0,  0, 1, 0,
+         0,  0, 0, 1,
+    }
+}
+
+mat4_scale :: proc(x, y, z: f32) -> Mat4 {
+	return {
+    	x, 0, 0, 0,
+     	0, y, 0, 0,
+      	0, 0, z, 0,
+       	0, 0, 0, 1,
+    }
 }

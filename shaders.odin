@@ -9,10 +9,10 @@ layout (location = 2) in vec2 a_tex_coord;
 
 out vec3 vertex_color;
 out vec2 tex_coord;
-uniform float horizontal_offset;
+uniform mat4 transform;
 
 void main() {
-    gl_Position = vec4(a_pos.x + horizontal_offset, -a_pos.y, a_pos.z, 1.0);
+    gl_Position = transform * vec4(a_pos, 1.0);
     vertex_color = a_color;
     tex_coord = a_tex_coord;
 }`
